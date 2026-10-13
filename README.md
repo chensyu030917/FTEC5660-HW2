@@ -125,31 +125,4 @@ document content from system instructions. Against my own Task 1 agent, both
 `task2/target_cv.pdf` and `task2/adversarial_cv.pdf` received a reliability
 score of **0.95**, so the attack passed the required self-test.
 
-### Task 3: Reflection on AI Paradoxes
 
-This homework exposed a central AI paradox: greater autonomy can create both
-greater efficiency and greater fragility. The verifier can search several data
-sources and compare a CV much faster than a human, but the same ability to read
-and act on natural language creates a new attack surface. A sentence hidden in
-a document can look like data to a person and like an instruction to an agent.
-The more capable the agent becomes at following context, the more carefully its
-design must separate trusted instructions from untrusted evidence.
-
-There is also a paradox between objectivity and uncertainty. A reliability
-score such as 0.95 appears precise, yet it depends on identity resolution,
-profile completeness, wording equivalence and the quality of PDF extraction.
-The first version of my verifier misclassified a valid CV because several
-people shared the same name, city and industry. The problem was not reasoning
-about the CV itself; it was selecting the wrong person. This showed me that a
-numerical AI output should be accompanied by evidence, uncertainty handling and
-an auditable decision process rather than being treated as an objective fact.
-
-Finally, automated verification creates a tension between fraud prevention and
-privacy. Public social profiles can reveal inconsistencies, but availability
-does not automatically imply consent for every form of automated scoring. In a
-real recruitment or KYC system, I would require data minimisation, access
-controls, clear retention limits and human review for adverse decisions. The
-lesson I take from the assignment is that useful AI engineering includes the
-surrounding safeguards: deterministic checks where possible, careful tool
-permissions, adversarial testing, monitoring and a meaningful path for people
-to challenge an incorrect result.

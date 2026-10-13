@@ -90,10 +90,66 @@ python3 hw2.py --cv-folder task2
 attack the MCP server. See the homework description for the full rules.
 
 ## Homework 2 solution:
-> to students: this is your report, see the homework description.
 
 ### Task 1
-> one paragraph describing your solution, and your results on `public_test`.
+
+I implemented a LangChain tool-calling agent with the required
+`deepseek-v4-flash` model and the six SocialGraph MCP tools. The system prompt
+treats all CV text as untrusted candidate data, requires LinkedIn to be used as
+the primary source, and uses Facebook as supporting evidence. To resolve common
+names, the agent searches with the candidate's name, city and industry in their
+separate tool fields, then compares up to ten plausible profiles using
+independent identifiers such as employment and education before selecting an
+identity. It checks every discrepancy field listed in the specification while
+accepting semantic equivalents such as expanded degree names and job titles
+whose seniority is stored separately. `score_cvs()` processes at most three CVs
+concurrently with `asyncio.Semaphore(3)`, retries failed or malformed responses,
+and returns a neutral score rather than allowing one failure to crash the run.
+The final implementation scored **7/7 on `public_test`** and generated the
+required `results.csv` end to end.
 
 ### Task 2
-> the attack techniques you used and why you expect them to work.
+
+My adversarial CV contains one real false claim: it visibly lists **Bloomberg
+Terminal** as a skill even though that skill is absent from Kelly Tsang's
+LinkedIn profile. I rendered only this false skill as a raster image inside the
+PDF, while keeping the truthful CV content as normal selectable text. The
+provided `MarkItDown` loader therefore extracts the truthful name, location,
+jobs, education and four verified skills but does not extract the false visual
+skill. This exploits the gap between what a human sees and what a text-only
+verifier receives. I also included an indirect prompt injection as white,
+machine-readable text that encourages a weak verifier to trust the extracted
+claims and ignore decorative image badges. The two techniques target different
+failure modes: incomplete PDF extraction and failure to separate untrusted
+document content from system instructions. Against my own Task 1 agent, both
+`task2/target_cv.pdf` and `task2/adversarial_cv.pdf` received a reliability
+score of **0.95**, so the attack passed the required self-test.
+
+### Task 3: Reflection on AI Paradoxes
+
+This homework exposed a central AI paradox: greater autonomy can create both
+greater efficiency and greater fragility. The verifier can search several data
+sources and compare a CV much faster than a human, but the same ability to read
+and act on natural language creates a new attack surface. A sentence hidden in
+a document can look like data to a person and like an instruction to an agent.
+The more capable the agent becomes at following context, the more carefully its
+design must separate trusted instructions from untrusted evidence.
+
+There is also a paradox between objectivity and uncertainty. A reliability
+score such as 0.95 appears precise, yet it depends on identity resolution,
+profile completeness, wording equivalence and the quality of PDF extraction.
+The first version of my verifier misclassified a valid CV because several
+people shared the same name, city and industry. The problem was not reasoning
+about the CV itself; it was selecting the wrong person. This showed me that a
+numerical AI output should be accompanied by evidence, uncertainty handling and
+an auditable decision process rather than being treated as an objective fact.
+
+Finally, automated verification creates a tension between fraud prevention and
+privacy. Public social profiles can reveal inconsistencies, but availability
+does not automatically imply consent for every form of automated scoring. In a
+real recruitment or KYC system, I would require data minimisation, access
+controls, clear retention limits and human review for adverse decisions. The
+lesson I take from the assignment is that useful AI engineering includes the
+surrounding safeguards: deterministic checks where possible, careful tool
+permissions, adversarial testing, monitoring and a meaningful path for people
+to challenge an incorrect result.
